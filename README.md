@@ -1,24 +1,57 @@
-# BingNUOS-Telegram
-Telegram Bot deployed on Firebase Functions
+# BingNUOS Telegram
+Telegram Bot written in TypeScript and deployed on Firebase Functions
 
 ## Build Setup
 
-``` bash
-# install dependencies
-npm install -g firebase-tools
-npm install -g firebase-functions
-npm install -g firebase-admin
-npm install -g typescript
+1. Create a new bot using BotFather
+    ``` bash
+    /newbot
+    ```
 
-# initialize firebase project
-firebase init
+2. Copy your bot token and write it in functions folder .env 
+    ``` bash
+    BOT_TOKEN=<your_bot_token>
+    ```
+    Note: To load .env, you need to run ```firebase deploy``` command first.
 
-# build typescript
-cd functions && tsc
+3. Install dependencies
+    ``` bash
+    npm install -g firebase-tools
+    npm install -g firebase-functions
+    npm install -g firebase-admin
+    npm install -g typescript
+    npm install dotenv
+    ```
 
-# test locally
-firebase serve --only functions
+4. Initialize Firebase Project
+    ``` bash
+    firebase init
+    ```
 
-# deploy to firebase
-firebase deploy --only functions
-```
+5. Setup webhook
+    ``` bash
+    curl -F "url=https://<your_project_id>.firebaseapp.com/telegramBot" https://api.telegram.org/bot<your_bot_token>/setWebhook
+    ```
+    For local testing, use ngrok to expose your local server to the internet:
+    ``` bash
+    ngrok http 5001
+    ```
+    Then, use the ngrok url to set the webhook. Example:
+    ``` bash
+    https://api.telegram.org/bot<your_bot_token>/setWebhook?url=https://<ngrok_id>.ngrok.io/<your_project_id>/europe-west1/telegramBot
+    ```
+
+6. Build typescript
+    ``` bash
+    cd functions | tsc --watch
+    ```
+
+7. Test locally
+    ``` bash
+    firebase serve --only functions
+    ```
+
+8. Deploy to firebase
+    ``` bash
+    firebase deploy --only functions
+    ```

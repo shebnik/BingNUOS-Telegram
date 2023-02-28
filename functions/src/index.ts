@@ -1,9 +1,9 @@
+import * as dotenv from "dotenv";
+import * as admin from "firebase-admin";
 import * as functions from "firebase-functions";
+import {TelegramBot} from "./telegram/telegram_bot";
 
-// Start writing functions
-// https://firebase.google.com/docs/functions/typescript
+dotenv.config();
+admin.initializeApp(functions.config().firebase);
 
-export const helloWorld = functions.https.onRequest((request, response) => {
-  functions.logger.info("Hello logs!", {structuredData: true});
-  response.send("Hello from Firebase!");
-});
+export const telegram = new TelegramBot().getHandler();
