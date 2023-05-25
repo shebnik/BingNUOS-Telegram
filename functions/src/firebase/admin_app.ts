@@ -1,17 +1,18 @@
 import {getDatabase} from "firebase-admin/database";
-import {getFirestore} from "firebase-admin/firestore";
+// import {getFirestore} from "firebase-admin/firestore";
 import * as functions from "firebase-functions";
 
 /**
  * @fileoverview Firebase Admin App
  */
 export class AdminApp {
-  private firestore = getFirestore();
+  // private firestore = getFirestore();
   private db = getDatabase();
   private groupsRef = this.db.ref("/groups");
 
 
-  public onCreateSchedulesGroup = functions.firestore
+  public onCreateSchedulesGroup = functions
+    .region("europe-west1").firestore
     .document("schedules/{docId}")
     .onCreate(async (snap, context) => {
       const docId = context.params.docId;
@@ -24,7 +25,8 @@ export class AdminApp {
     });
 
 
-  public onDeleteSchedulesGroup = functions.firestore
+  public onDeleteSchedulesGroup = functions
+    .region("europe-west1").firestore
     .document("schedules/{docId}")
     .onDelete(async (snap, context) => {
       const docId = context.params.docId;
@@ -34,7 +36,8 @@ export class AdminApp {
       await this.groupsRef.child(docId).remove();
     });
 
-  public onUpdateSchedulesGroup = functions.firestore
+  public onUpdateSchedulesGroup = functions
+    .region("europe-west1").firestore
     .document("schedules/{docId}")
     .onUpdate(async (snap, context) => {
       const docId = context.params.docId;

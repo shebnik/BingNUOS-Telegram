@@ -8,7 +8,7 @@ import {AdminApp} from "./firebase/admin_app";
 dotenv.config();
 admin.initializeApp(functions.config().firebase);
 
-export const telegram = new TelegramBot().getHandler();
+export const telegramBot = new TelegramBot().getHandler();
 export const cronjob = new Cronjob().getHandler();
 
 const adminApp = new AdminApp();
