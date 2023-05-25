@@ -1,9 +1,10 @@
 /* eslint-disable max-len */
 
 import moment from "moment";
-import {lessonTimes, translatedWeekDay} from "./constants";
+import {lessonTimesDuration, translatedWeekDay} from "./constants";
 import {Messages} from "./messages";
 import {CustomContext} from "./telegram_bot";
+import {FirestoreDatabase} from "../firebase/firestore_database";
 
 /**
  * Services
@@ -49,16 +50,57 @@ export class Services {
       } else {
         subject = item.subject;
       }
-      res += `${item.number} пара ${lessonTimes[item.number - 1]} - ${subject.name}. Кабінет: ${subject.cabinet}. Викладач: ${subject.teacher}\n\n`;
+      res += `${item.number} пара ${lessonTimesDuration[item.number - 1]} - ${subject.name}. Кабінет: ${subject.cabinet}. Викладач: ${subject.teacher}\n\n`;
     });
     return res;
+  }
+
+  /**
+     * @description Get schedule by pair number
+     * @param {string} group - Group
+     * @param {string} weekday - Weekday
+     * @param {number} pairNumber - Pair number
+     * @return {Promise<string | undefined>}
+     */
+  public static async getScheduleByPairNumber(
+    group: string, weekday: string, pairNumber: number):
+        Promise<string | undefined> {
+    const scheduleDoc = await new FirestoreDatabase().getSchedule(group);
+    if (scheduleDoc === undefined || !scheduleDoc.exists) return;
+
+    weekday = weekday.toLowerCase();
+    const data = scheduleDoc.data();
+    if (data === undefined) {
+      return Messages.scheduleForGroupNotExists;
+    }
+    const scheduleInfo = data[weekday];
+    if (scheduleInfo == undefined || scheduleInfo.length < 1) return;
+    let subject;
+    for (let i = 0; i < scheduleInfo.length; i++) {
+      if (scheduleInfo[i].number == pairNumber) {
+        subject = scheduleInfo[i];
+        break;
+      }
+    }
+    if (subject == undefined) return;
+
+    let subjectInfo;
+    if (subject.isDivided) {
+      subjectInfo =
+            this.isEvenWeekInMonth() ? subject.evenSubject : subject.oddSubject;
+    } else {
+      subjectInfo = subject.subject;
+    }
+
+    // eslint-disable-next-line max-len
+    return `Наступна пара - ${subjectInfo.name}. Кабінет ${subjectInfo.cabinet}. Викладач: ${subjectInfo.teacher}`;
   }
 
   /**
     * @description isEvenWeekInMonth
     * @return {boolean}
     */
-  private static isEvenWeekInMonth(): boolean {
+  public static isEvenWeekInMonth(): boolean {
     const currentDate = new Date();
     const currentWeekNumber = moment(currentDate).isoWeek();
     const currentMonth = currentDate.getMonth();

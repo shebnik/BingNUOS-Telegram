@@ -1,4 +1,4 @@
-export const lessonTimes = [
+export const lessonTimesDuration = [
   "(9:00-10:20)",
   "(10:30-11:50)",
   "(12:20-13:40)",
@@ -14,6 +14,15 @@ export const times = [
   "13:40",
   "15:10",
   "16:40",
+];
+
+export const lessonTimes = [
+  "9:00",
+  "10:30",
+  "12:20",
+  "13:50",
+  "15:20",
+  "16:50",
 ];
 
 export const weekdays = [

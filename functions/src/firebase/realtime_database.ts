@@ -36,7 +36,6 @@ export class RealtimeDatabase {
     return this.database;
   }
 
-
   /**
    * @description Get groups reference
    * @param {number} chatId - Chat id
@@ -153,5 +152,30 @@ export class RealtimeDatabase {
     await this.telegramUserRef(id).update({
       "subscribed": newSubscription,
     });
+  }
+
+  /**
+   * @description Get subscribed users
+   * @return {Promise<Map<string, number[]>>}
+   */
+  public async getSubscribedUsers() {
+    const users = (await this.usersRef.get()).toJSON();
+    if (!users) {
+      return new Map();
+    }
+    const subscribedUsers = new Map();
+    Object.values(users)
+      .filter((u) => u.subscribed === true)
+      .forEach((u) => {
+        if (subscribedUsers.has(u.group)) {
+          subscribedUsers.set(
+            u.group,
+            [...subscribedUsers.get(u.group), u.chatId],
+          );
+        } else {
+          subscribedUsers.set(u.group, [u.chatId]);
+        }
+      });
+    return subscribedUsers;
   }
 }
