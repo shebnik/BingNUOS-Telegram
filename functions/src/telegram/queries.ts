@@ -84,8 +84,8 @@ export class Queries {
         await ctx.editMessageText(Messages.loading);
         await ctx.db.setTelegramUser(ctx.chat.id, query);
         const group = await ctx.db.getGroupById(query);
-        ctx.editMessageText(`${Messages.selectedGroup} ${group}\n\n
-        ${Messages.help}`);
+        // eslint-disable-next-line max-len
+        ctx.editMessageText(`${Messages.selectedGroup} ${group}\n\n${Messages.help}`);
         return;
       }
     }
