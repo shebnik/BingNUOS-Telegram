@@ -1,0 +1,4 @@
+{
+    "startCommand": "Hello, select your group.\n\nYou can manage your language /language",
+    "groupSelected": "You selected group {0}"
+}

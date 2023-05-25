@@ -1,5 +1,10 @@
-import {Context, Telegraf} from "telegraf";
-import {Update} from "typegram";
+import {logger} from "firebase-functions/v1";
+import {Telegraf} from "telegraf";
+import {courseSelectorMarkup, scheduleSelectorMarkup} from "./markups";
+import {CustomContext} from "./telegram_bot";
+import {Messages} from "./messages";
+import {weekdays} from "./constants";
+import {Services} from "./services";
 
 /**
  * @fileoverview Telegram commands
@@ -7,46 +12,92 @@ import {Update} from "typegram";
 export class Commands {
   /**
    * @description Constructor
-   * @param {Telegraf<Context<Update>>} bot - Telegram bot
+   * @param {Telegraf<CustomContext>} bot - Telegram bot
    * @constructor
    */
-  constructor(bot: Telegraf<Context<Update>>) {
-    bot.command("start", Commands.start);
-    bot.command("language", Commands.language);
+  constructor(bot: Telegraf<CustomContext>) {
+    bot.command(["start", "group"], this.group);
+    bot.command(weekdays, this.schedule);
+    bot.command("schedule", this.scheduleMenu);
+    bot.command("subscribe", this.subscribe);
+    bot.command("unsubscribe", this.unsubscribe);
   }
 
   /**
-   * @description Start command
-   * @param {Context<Update>} ctx - Telegram context
+   * @description Group command
+   * @param {CustomContext} ctx - Telegram context
    */
-  static async start(ctx: Context<Update>) {
-    await ctx.reply("Welcome! Select a language /language");
+  async group(ctx: CustomContext) {
+    logger.info("Group command");
+    return await ctx.reply(
+      Messages.selectCourse,
+      courseSelectorMarkup,
+    );
   }
 
   /**
-   * @description Language command
-   * @param {Context<Update>} ctx - Telegram context
+   * @description Schedule command
+   * @param {CustomContext} ctx - Telegram context
    */
-  static async language(ctx: Context<Update>) {
-    await ctx.reply("Select a language", {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            {
-              text: "English 🇬🇧",
-              callback_data: "en",
-            },
-            {
-              text: "Українська 🇺🇦",
-              callback_data: "uk",
-            },
-            {
-              text: "Русский 🏳️",
-              callback_data: "ru",
-            },
-          ],
-        ],
-      },
-    });
+  async schedule(ctx: CustomContext): Promise<void> {
+    logger.info("Schedule command");
+    if (ctx.chat &&
+      await ctx.db.userExists(ctx.chat.id) &&
+      ctx.message && "text" in ctx.message) {
+      const weekDay = ctx.message.text.toString().replace("/", "");
+      const schedule = await Services.getScheduleByWeekday(ctx, weekDay);
+      if (schedule != undefined) {
+        await ctx.reply(schedule);
+        return;
+      }
+    }
+    await ctx.reply(Messages.selectCourse, courseSelectorMarkup);
+  }
+
+  /**
+   * @description Schedule menu command
+   * @param {CustomContext} ctx - Telegram context
+   * @return {Promise<void>}
+   */
+  async scheduleMenu(ctx: CustomContext): Promise<void> {
+    logger.info("Schedule menu command");
+    if (ctx.chat && await ctx.db.userExists(ctx.chat.id)) {
+      await ctx.reply(
+        Messages.selectWeekday,
+        scheduleSelectorMarkup,
+      );
+      return;
+    }
+    await ctx.reply(Messages.selectCourse, courseSelectorMarkup);
+  }
+
+  /**
+   * @description Subscribe command
+   * @param {CustomContext} ctx - Telegram context
+   * @return {Promise<void>}
+   */
+  async subscribe(ctx: CustomContext): Promise<void> {
+    logger.info("Subscribe command");
+    if (ctx.chat && await ctx.db.userExists(ctx.chat.id)) {
+      await ctx.db.updateUserSubscription(ctx.chat.id, true);
+      await ctx.reply(Messages.youSubscribed);
+      return;
+    }
+    await ctx.reply(Messages.selectCourse, courseSelectorMarkup);
+  }
+
+  /**
+   * @description Unsubscribe command
+   * @param {CustomContext} ctx - Telegram context
+   * @return {Promise<void>}
+   */
+  async unsubscribe(ctx: CustomContext): Promise<void> {
+    logger.info("Unsubscribe command");
+    if (ctx.chat && await ctx.db.userExists(ctx.chat.id)) {
+      await ctx.db.updateUserSubscription(ctx.chat.id, false);
+      await ctx.reply(Messages.youUnsubscribed);
+      return;
+    }
+    await ctx.reply(Messages.selectCourse, courseSelectorMarkup);
   }
 }

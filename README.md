@@ -20,7 +20,10 @@ Telegram Bot written in TypeScript and deployed on Firebase Functions
     npm install -g firebase-functions
     npm install -g firebase-admin
     npm install -g typescript
+    npm install -g cpy-cli
+    npm install -g ngrok
     npm install dotenv
+    npm install npm-run-all
     ```
 
 4. Initialize Firebase Project
@@ -30,7 +33,7 @@ Telegram Bot written in TypeScript and deployed on Firebase Functions
 
 5. Setup webhook
     ``` bash
-    curl -F "url=https://<your_project_id>.firebaseapp.com/telegramBot" https://api.telegram.org/bot<your_bot_token>/setWebhook
+    curl -F "url=https://europe-west1-<your_project_id>.firebaseapp.com/telegramBot" https://api.telegram.org/bot<your_bot_token>/setWebhook
     ```
     For local testing, use ngrok to expose your local server to the internet:
     ``` bash

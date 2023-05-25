@@ -2,12 +2,21 @@ import * as functions from "firebase-functions";
 import {Context, Telegraf} from "telegraf";
 
 import {Commands} from "./commands";
+import {Queries} from "./queries";
+
+import {RealtimeDatabase} from "../firebase/realtime_database";
+import {FirestoreDatabase} from "../firebase/firestore_database";
+
+export interface CustomContext extends Context {
+  db: RealtimeDatabase;
+  firestore: FirestoreDatabase;
+}
 
 /**
  * @fileoverview Telegram bot
  */
 export class TelegramBot {
-  private bot: Telegraf<Context>;
+  private bot: Telegraf<CustomContext>;
 
   /**
    * @description Constructor
@@ -20,6 +29,12 @@ export class TelegramBot {
       process.exit(1);
     }
     this.bot = new Telegraf(botToken);
+    this.bot.use(async (ctx, next) => {
+      const customContext = ctx as CustomContext;
+      customContext.db = new RealtimeDatabase();
+      customContext.firestore = new FirestoreDatabase();
+      await next();
+    });
     this.init();
   }
 
@@ -27,7 +42,10 @@ export class TelegramBot {
    * @description Initialize bot
    */
   private init() {
+    functions.logger.info("Initializing bot");
+    this.bot.catch(this.catch);
     new Commands(this.bot);
+    new Queries(this.bot);
   }
 
   /**
@@ -40,5 +58,15 @@ export class TelegramBot {
       .https.onRequest((req, res) => {
         this.bot.handleUpdate(req.body, res);
       });
+  }
+
+  /**
+   * @description Catch errors
+   * @param {unknown} err - Error
+   * @param {Context} ctx - Telegram context
+   */
+  private catch(err: unknown, ctx: Context) {
+    functions.logger.error(`Telegram bot error: ${err}`);
+    ctx.reply("Something went wrong");
   }
 }
