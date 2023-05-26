@@ -10,7 +10,7 @@ export const lessonTimesDuration = [
 export const times = [
   "08:50",
   "10:20",
-  "11:50",
+  "12:10",
   "13:40",
   "15:10",
   "16:40",

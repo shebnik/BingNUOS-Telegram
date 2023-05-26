@@ -50,7 +50,7 @@ export class Services {
       } else {
         subject = item.subject;
       }
-      res += `${item.number} пара ${lessonTimesDuration[item.number - 1]} - ${subject.name}. Кабінет: ${subject.cabinet}. Викладач: ${subject.teacher}\n\n`;
+      res += `${item.number} пара ${lessonTimesDuration[item.number - 1]} - ${subject.name}.\nКабінет: ${subject.cabinet}.\nВикладач: ${subject.teacher}\n\n`;
     });
     return res;
   }
@@ -93,7 +93,7 @@ export class Services {
     }
 
     // eslint-disable-next-line max-len
-    return `Наступна пара - ${subjectInfo.name}. Кабінет ${subjectInfo.cabinet}. Викладач: ${subjectInfo.teacher}`;
+    return `Наступна пара - ${subjectInfo.name}.\nКабінет ${subjectInfo.cabinet}.\nВикладач: ${subjectInfo.teacher}`;
   }
 
   /**

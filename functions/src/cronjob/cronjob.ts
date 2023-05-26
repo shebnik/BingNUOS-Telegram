@@ -8,7 +8,6 @@ import {Services} from "../telegram/services";
  * @fileoverview Cronjob class
  */
 export class Cronjob {
-  private date: Date;
   private bot: Telegraf;
   /**
      * @description Constructor
@@ -21,7 +20,6 @@ export class Cronjob {
       console.error("Missing BOT_TOKEN environment variable");
       process.exit(1);
     }
-    this.date = new Date();
     this.bot = new Telegraf(botToken);
   }
   /**
@@ -42,24 +40,25 @@ export class Cronjob {
      * @return {Promise<void>}
      */
   private async sendSchedules(): Promise<void> {
-    const weekday = this.date.toLocaleString("en", {
+    const date = new Date();
+    const weekday = date.toLocaleString("en", {
       timeZone: "Europe/Kiev",
       weekday: "long",
     }).toLowerCase();
     if (weekday === "saturday" || weekday === "sunday") return;
 
-    const time = this.date.toLocaleString("uk", {
+    const time = date.toLocaleString("uk", {
       timeZone: "Europe/Kiev",
       hour: "numeric",
       minute: "numeric",
     });
+    functions.logger.log(`Time: ${time}`);
     const number = times.findIndex((e) => e === time);
+    if (number === -1) return;
 
     functions.logger.log(
       `${times[number]} - will send schedule $weekday on ${number + 1} lesson`,
     );
-
-    if (number === -1) return;
 
     const subscribedUsers = await new RealtimeDatabase().getSubscribedUsers();
 

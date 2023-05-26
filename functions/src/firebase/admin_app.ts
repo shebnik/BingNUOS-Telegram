@@ -1,12 +1,10 @@
 import {getDatabase} from "firebase-admin/database";
-// import {getFirestore} from "firebase-admin/firestore";
 import * as functions from "firebase-functions";
 
 /**
  * @fileoverview Firebase Admin App
  */
 export class AdminApp {
-  // private firestore = getFirestore();
   private db = getDatabase();
   private groupsRef = this.db.ref("/groups");
 
