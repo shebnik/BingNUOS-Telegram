@@ -23,7 +23,7 @@ export class FlutterFunctions {
         return true;
       } catch (error) {
         functions.logger.error(error);
-        return false;
+        return error;
       }
     },
     );
@@ -48,7 +48,7 @@ export class FlutterFunctions {
         });
         await this.firestore.collection("users").doc(user.uid).set({
           email: email,
-          moderationGroups: [],
+          moderationGroups: data.moderationGroups,
           name: name,
           role: "moderator",
           userId: user.uid,
@@ -56,7 +56,7 @@ export class FlutterFunctions {
         return true;
       } catch (error) {
         functions.logger.error(error);
-        return false;
+        return error;
       }
     },
     );
