@@ -22,19 +22,17 @@ export class Cronjob {
     }
     this.bot = new Telegraf(botToken);
   }
+
   /**
-   * @description Get handler
-   * @return {functions.HttpsFunction}
+   * @description Send message
+   * @param {string} uid - User id
+   * @param {string} message - Message
+   * @return {Promise<void>}
    */
-  public getHandler(): functions.HttpsFunction {
-    return functions
-      .region("europe-west1")
-      .https.onRequest(async (req, res): Promise<void> => {
-        functions.logger.info("Cronjob started");
-        await this.sendSchedules();
-        res.sendStatus(200);
-      });
+  private async sendMessage(uid: string, message: string): Promise<void> {
+    await this.bot.telegram.sendMessage(uid, message);
   }
+
   /**
      * @description Send schedules
      * @return {Promise<void>}
@@ -66,7 +64,7 @@ export class Cronjob {
       let message =
             await Services.getScheduleByPairNumber(group, weekday, number + 1);
       if (message === undefined) continue;
-      message += `\n\nПочаток ${number + 1} пары о ${lessonTimes[number]}`;
+      message += `\n\nПочаток ${number + 1} пари о ${lessonTimes[number]}`;
 
       for (const uid of userIds) {
         functions.logger.log(message);
@@ -74,13 +72,18 @@ export class Cronjob {
       }
     }
   }
+
   /**
-   * @description Send message
-   * @param {string} uid - User id
-   * @param {string} message - Message
-   * @return {Promise<void>}
+   * @description Get handler
+   * @return {functions.HttpsFunction}
    */
-  private async sendMessage(uid: string, message: string): Promise<void> {
-    await this.bot.telegram.sendMessage(uid, message);
+  public getHandler(): functions.HttpsFunction {
+    return functions
+      .region("europe-west1")
+      .https.onRequest(async (req, res): Promise<void> => {
+        functions.logger.info("Cronjob started");
+        await this.sendSchedules();
+        res.sendStatus(200);
+      });
   }
 }

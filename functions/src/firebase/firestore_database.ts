@@ -18,14 +18,6 @@ export class FirestoreDatabase {
   }
 
   /**
-     * @description Get firestore
-     * @return {FirebaseFirestore.Firestore}
-     */
-  public getFirestore(): FirebaseFirestore.Firestore {
-    return this.firestore;
-  }
-
-  /**
      * @description Get schedule document reference
      * @param {string} group - Group
      * @return {firestore.DocumentReference}
@@ -33,6 +25,15 @@ export class FirestoreDatabase {
   private scheduleDocRef(group: string): firestore.DocumentReference {
     return this.schedulesRef.doc(group);
   }
+
+  /**
+     * @description Get firestore
+     * @return {FirebaseFirestore.Firestore}
+     */
+  public getFirestore(): FirebaseFirestore.Firestore {
+    return this.firestore;
+  }
+
   /**
      * @description Get schedule
      * @param {string} group - Group

@@ -8,27 +8,6 @@ import * as admin from "firebase-admin";
 export class FlutterFunctions {
   private firestore = getFirestore();
   /**
-   * @description Delete user from Firebase Auth and Firestore
-   * @param data.uid User ID
-   * @param context
-   */
-  public removeUser = functions
-    .region("europe-west1").https
-    .onCall(async (data) => {
-      try {
-        const uid = data.uid;
-        functions.logger.info(`[removeUser] uid: ${uid}`);
-        await admin.auth().deleteUser(uid);
-        await this.firestore.collection("users").doc(uid).delete();
-        return true;
-      } catch (error) {
-        functions.logger.error(error);
-        return error;
-      }
-    },
-    );
-
-  /**
    * @description Register user to Firebase Auth and Firestore
    * @param data.name User name
    * @param data.email User email
@@ -53,6 +32,26 @@ export class FlutterFunctions {
           role: "moderator",
           userId: user.uid,
         });
+        return true;
+      } catch (error) {
+        functions.logger.error(error);
+        return error;
+      }
+    },
+    );
+  /**
+   * @description Delete user from Firebase Auth and Firestore
+   * @param data.uid User ID
+   * @param context
+   */
+  public removeUser = functions
+    .region("europe-west1").https
+    .onCall(async (data) => {
+      try {
+        const uid = data.uid;
+        functions.logger.info(`[removeUser] uid: ${uid}`);
+        await admin.auth().deleteUser(uid);
+        await this.firestore.collection("users").doc(uid).delete();
         return true;
       } catch (error) {
         functions.logger.error(error);

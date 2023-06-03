@@ -13,6 +13,47 @@ import {FirestoreDatabase} from "../firebase/firestore_database";
  */
 export class Services {
   /**
+     * @description Get schedule by pair number
+     * @param {string} group - Group
+     * @param {string} weekday - Weekday
+     * @param {number} pairNumber - Pair number
+     * @return {Promise<string | undefined>}
+     */
+  public static async getScheduleByPairNumber(
+    group: string, weekday: string, pairNumber: number):
+        Promise<string | undefined> {
+    const scheduleDoc = await new FirestoreDatabase().getSchedule(group);
+    if (scheduleDoc === undefined || !scheduleDoc.exists) return;
+
+    weekday = weekday.toLowerCase();
+    const data = scheduleDoc.data();
+    if (data === undefined) {
+      return Messages.scheduleForGroupNotExists;
+    }
+    const scheduleInfo = data[weekday];
+    if (scheduleInfo == undefined || scheduleInfo.length < 1) return;
+    let subject;
+    for (let i = 0; i < scheduleInfo.length; i++) {
+      if (scheduleInfo[i].number == pairNumber) {
+        subject = scheduleInfo[i];
+        break;
+      }
+    }
+    if (subject == undefined) return;
+
+    let subjectInfo;
+    if (subject.isDivided) {
+      subjectInfo =
+            this.isEvenWeekInMonth() ? subject.evenSubject : subject.oddSubject;
+    } else {
+      subjectInfo = subject.subject;
+    }
+
+    // eslint-disable-next-line max-len
+    return `Наступна пара - ${subjectInfo.name}.\nКабінет ${subjectInfo.cabinet}.\nВикладач: ${subjectInfo.teacher}`;
+  }
+
+  /**
    * @description Get schedule by weekday
    * @param {CustomContext} ctx - Telegram context
    * @param {string} weekday - Weekday
@@ -53,47 +94,6 @@ export class Services {
       res += `${item.number} пара ${lessonTimesDuration[item.number - 1]} - ${subject.name}.\nКабінет: ${subject.cabinet}.\nВикладач: ${subject.teacher}\n\n`;
     });
     return res;
-  }
-
-  /**
-     * @description Get schedule by pair number
-     * @param {string} group - Group
-     * @param {string} weekday - Weekday
-     * @param {number} pairNumber - Pair number
-     * @return {Promise<string | undefined>}
-     */
-  public static async getScheduleByPairNumber(
-    group: string, weekday: string, pairNumber: number):
-        Promise<string | undefined> {
-    const scheduleDoc = await new FirestoreDatabase().getSchedule(group);
-    if (scheduleDoc === undefined || !scheduleDoc.exists) return;
-
-    weekday = weekday.toLowerCase();
-    const data = scheduleDoc.data();
-    if (data === undefined) {
-      return Messages.scheduleForGroupNotExists;
-    }
-    const scheduleInfo = data[weekday];
-    if (scheduleInfo == undefined || scheduleInfo.length < 1) return;
-    let subject;
-    for (let i = 0; i < scheduleInfo.length; i++) {
-      if (scheduleInfo[i].number == pairNumber) {
-        subject = scheduleInfo[i];
-        break;
-      }
-    }
-    if (subject == undefined) return;
-
-    let subjectInfo;
-    if (subject.isDivided) {
-      subjectInfo =
-            this.isEvenWeekInMonth() ? subject.evenSubject : subject.oddSubject;
-    } else {
-      subjectInfo = subject.subject;
-    }
-
-    // eslint-disable-next-line max-len
-    return `Наступна пара - ${subjectInfo.name}.\nКабінет ${subjectInfo.cabinet}.\nВикладач: ${subjectInfo.teacher}`;
   }
 
   /**

@@ -39,6 +39,16 @@ export class TelegramBot {
   }
 
   /**
+   * @description Catch errors
+   * @param {unknown} err - Error
+   * @param {Context} ctx - Telegram context
+   */
+  private catch(err: unknown, ctx: Context) {
+    functions.logger.error(`Telegram bot error: ${err}`);
+    ctx.reply("Something went wrong");
+  }
+
+  /**
    * @description Initialize bot
    */
   private init() {
@@ -58,15 +68,5 @@ export class TelegramBot {
       .https.onRequest((req, res) => {
         this.bot.handleUpdate(req.body, res);
       });
-  }
-
-  /**
-   * @description Catch errors
-   * @param {unknown} err - Error
-   * @param {Context} ctx - Telegram context
-   */
-  private catch(err: unknown, ctx: Context) {
-    functions.logger.error(`Telegram bot error: ${err}`);
-    ctx.reply("Something went wrong");
   }
 }

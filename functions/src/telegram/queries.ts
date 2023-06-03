@@ -12,27 +12,6 @@ import {Services} from "./services";
  */
 export class Queries {
   /**
-    * @description Constructor
-    * @param {Telegraf<CustomContext>} bot - Telegram bot
-    * @constructor
-    */
-  constructor(bot: Telegraf<CustomContext>) {
-    bot.on("inline_query", Queries.inlineQuery);
-    bot.on("callback_query", Queries.callbackQuery);
-  }
-
-  /**
-    * @description Inline query
-    * @param {CustomContext} ctx - Telegram context
-    * @return {Promise<void>}
-    */
-  static async inlineQuery(ctx: CustomContext): Promise<void> {
-    if (!ctx.inlineQuery) {
-      logger.info("No inline query");
-      return;
-    }
-  }
-  /**
     * @description Callback query
     * @param {CustomContext} ctx - Telegram context
     * @return {Promise<void>}
@@ -89,5 +68,27 @@ export class Queries {
         return;
       }
     }
+  }
+
+  /**
+    * @description Inline query
+    * @param {CustomContext} ctx - Telegram context
+    * @return {Promise<void>}
+    */
+  static async inlineQuery(ctx: CustomContext): Promise<void> {
+    if (!ctx.inlineQuery) {
+      logger.info("No inline query");
+      return;
+    }
+  }
+
+  /**
+    * @description Constructor
+    * @param {Telegraf<CustomContext>} bot - Telegram bot
+    * @constructor
+    */
+  constructor(bot: Telegraf<CustomContext>) {
+    bot.on("inline_query", Queries.inlineQuery);
+    bot.on("callback_query", Queries.callbackQuery);
   }
 }

@@ -28,12 +28,12 @@ export class RealtimeDatabase {
   }
 
   /**
-   * @description Get database
-   * @return {database.Database}
-   * @public
+   * @description Get group reference
+   * @param {string} id - Document id
+   * @return {database.Reference}
    */
-  public getDatabase(): database.Database {
-    return this.database;
+  private groupRef(id: string): database.Reference {
+    return this.database.ref(`/groups/${id}`);
   }
 
   /**
@@ -46,12 +46,57 @@ export class RealtimeDatabase {
   }
 
   /**
-   * @description Get group reference
-   * @param {string} id - Document id
-   * @return {database.Reference}
+   * @description Get database
+   * @return {database.Database}
+   * @public
    */
-  private groupRef(id: string): database.Reference {
-    return this.database.ref(`/groups/${id}`);
+  public getDatabase(): database.Database {
+    return this.database;
+  }
+
+  /**
+   * @description Get group by id
+   * @param {string} id - Group id
+   * @return {string} - Group
+   */
+  public async getGroupById(id: string): Promise<string> {
+    logger.info(`Getting group by id ${id}`);
+    const json = (await this.groupRef(id).get()).toJSON();
+    if (json && "group" in json) {
+      return json.group as string;
+    }
+    logger.error(`Group with id ${id} not found`);
+    return "";
+  }
+
+  /**
+   * @description Get telegram user
+   * @param {number} chatId - Chat id
+   * @return {string} - Group id
+   */
+  public async getGroupByUserId(chatId: number): Promise<string | undefined> {
+    logger.info(`Getting group by user id ${chatId}`);
+    const json = (await this.telegramUserRef(chatId).get()).toJSON();
+    if (json && "group" in json) {
+      return json.group as string;
+    }
+    logger.error(`Group with user id ${chatId} not found`);
+    return undefined;
+  }
+
+  /**
+   * @description Get group ids
+   * @return {string[]} - Group ids
+   */
+  public async getGroupIds(): Promise<string[]> {
+    logger.info("Getting group ids");
+    const snapshot = await this.groupsRef.get();
+    const groupIds: string[] =
+      Object.entries(snapshot.toJSON() ?? {})
+        .map(([id, data]: [string, GroupData]) => ({id, ...data}))
+        .map(({docId}) => docId);
+
+    return groupIds;
   }
 
   /**
@@ -71,87 +116,6 @@ export class RealtimeDatabase {
         .map(({group, docId}) => ({group, docId}));
 
     return groupList;
-  }
-
-  /**
-   * @description Get group ids
-   * @return {string[]} - Group ids
-   */
-  public async getGroupIds(): Promise<string[]> {
-    logger.info("Getting group ids");
-    const snapshot = await this.groupsRef.get();
-    const groupIds: string[] =
-      Object.entries(snapshot.toJSON() ?? {})
-        .map(([id, data]: [string, GroupData]) => ({id, ...data}))
-        .map(({docId}) => docId);
-
-    return groupIds;
-  }
-
-  /**
-   * @description Get group by id
-   * @param {string} id - Group id
-   * @return {string} - Group
-   */
-  public async getGroupById(id: string): Promise<string> {
-    logger.info(`Getting group by id ${id}`);
-    const json = (await this.groupRef(id).get()).toJSON();
-    if (json && "group" in json) {
-      return json.group as string;
-    }
-    logger.error(`Group with id ${id} not found`);
-    return "";
-  }
-
-  /**
-   * @description Set telegram user
-   * @param {number} chatId - Chat id
-   * @param {string} groupId - Group id
-   */
-  public async setTelegramUser(chatId: number, groupId: string): Promise<void> {
-    logger.info(`Setting telegram user ${chatId} to group ${groupId}`);
-    await this.telegramUserRef(chatId).set({
-      "chatId": chatId,
-      "group": groupId,
-      "subscribed": false,
-    });
-  }
-
-  /**
-   * @description Get telegram user
-   * @param {number} chatId - Chat id
-   * @return {string} - Group id
-   */
-  public async getGroupByUserId(chatId: number): Promise<string | undefined> {
-    logger.info(`Getting group by user id ${chatId}`);
-    const json = (await this.telegramUserRef(chatId).get()).toJSON();
-    if (json && "group" in json) {
-      return json.group as string;
-    }
-    logger.error(`Group with user id ${chatId} not found`);
-    return undefined;
-  }
-
-  /**
-   * @description Check if user exists
-   * @param {number} id - User id
-   */
-  public async userExists(id: number): Promise<boolean> {
-    return (await this.telegramUserRef(id).get()).exists();
-  }
-
-  /**
-    * @description update user subscription
-    * @param {number} id - User id
-    * @param {boolean} newSubscription - New subscription
-    * @return {Promise<void>}
-    */
-  public async updateUserSubscription(id: number, newSubscription: boolean):
-    Promise<void> {
-    logger.info(`Updating user ${id} subscription to ${newSubscription}`);
-    await this.telegramUserRef(id).update({
-      "subscribed": newSubscription,
-    });
   }
 
   /**
@@ -177,5 +141,41 @@ export class RealtimeDatabase {
         }
       });
     return subscribedUsers;
+  }
+
+  /**
+   * @description Set telegram user
+   * @param {number} chatId - Chat id
+   * @param {string} groupId - Group id
+   */
+  public async setTelegramUser(chatId: number, groupId: string): Promise<void> {
+    logger.info(`Setting telegram user ${chatId} to group ${groupId}`);
+    await this.telegramUserRef(chatId).set({
+      "chatId": chatId,
+      "group": groupId,
+      "subscribed": false,
+    });
+  }
+
+  /**
+    * @description update user subscription
+    * @param {number} id - User id
+    * @param {boolean} newSubscription - New subscription
+    * @return {Promise<void>}
+    */
+  public async updateUserSubscription(id: number, newSubscription: boolean):
+    Promise<void> {
+    logger.info(`Updating user ${id} subscription to ${newSubscription}`);
+    await this.telegramUserRef(id).update({
+      "subscribed": newSubscription,
+    });
+  }
+
+  /**
+   * @description Check if user exists
+   * @param {number} id - User id
+   */
+  public async userExists(id: number): Promise<boolean> {
+    return (await this.telegramUserRef(id).get()).exists();
   }
 }
