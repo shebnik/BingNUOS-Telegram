@@ -44,7 +44,8 @@ export class Commands {
     if (ctx.chat &&
       await ctx.db.userExists(ctx.chat.id) &&
       ctx.message && "text" in ctx.message) {
-      const weekDay = ctx.message.text.toString().replace("/", "");
+      const weekDay = ctx.message.text.toString()
+        .replace(/.*\/(\w+)@.*/, "$1").replace(/^\//, "");
       const schedule = await Services.getScheduleByWeekday(ctx, weekDay);
       if (schedule != undefined) {
         await ctx.reply(schedule);
