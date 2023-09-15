@@ -30,5 +30,6 @@ module.exports = {
     "quotes": ["error", "double"],
     "import/no-unresolved": 0,
     "indent": ["warn", 2],
+    "@typescript-eslint/no-var-requires": "off",
   },
 };

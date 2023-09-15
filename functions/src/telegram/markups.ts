@@ -22,6 +22,10 @@ export const courseSelectorMarkup = {
           text: "5",
           callback_data: "course5",
         },
+        {
+          text: "6",
+          callback_data: "course6",
+        },
       ],
     ],
   },

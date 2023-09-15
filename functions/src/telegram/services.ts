@@ -5,6 +5,7 @@ import {lessonTimesDuration, translatedWeekDay} from "./constants";
 import {Messages} from "./messages";
 import {CustomContext} from "./telegram_bot";
 import {FirestoreDatabase} from "../firebase/firestore_database";
+import {Schedule, Subject, SubjectInfo, getScheduleByWeekday} from "./models";
 
 /**
  * Services
@@ -30,9 +31,10 @@ export class Services {
     if (data === undefined) {
       return Messages.scheduleForGroupNotExists;
     }
-    const scheduleInfo = data[weekday];
+    const schedule: Schedule = data as Schedule;
+    const scheduleInfo = getScheduleByWeekday(schedule, weekday);
     if (scheduleInfo == undefined || scheduleInfo.length < 1) return;
-    let subject;
+    let subject: Subject | undefined;
     for (let i = 0; i < scheduleInfo.length; i++) {
       if (scheduleInfo[i].number == pairNumber) {
         subject = scheduleInfo[i];
@@ -41,7 +43,7 @@ export class Services {
     }
     if (subject == undefined) return;
 
-    let subjectInfo;
+    let subjectInfo: SubjectInfo;
     if (subject.isDivided) {
       subjectInfo =
             this.isEvenWeekInMonth() ? subject.evenSubject : subject.oddSubject;
@@ -77,15 +79,17 @@ export class Services {
     if (data === undefined) {
       return Messages.scheduleForGroupNotExists;
     }
-    const scheduleInfo = data[weekday];
+    const schedule: Schedule = data as Schedule;
+
+    const scheduleInfo = getScheduleByWeekday(schedule, weekday);
     if (scheduleInfo === null || scheduleInfo.length < 1) {
-      return `Розклад на ${translatedWeekDay.get(weekday.toLowerCase())} відсутній`;
+      return `Розклад на ${translatedWeekDay.get(weekday)} відсутній`;
     }
 
-    let res = `Розклад на ${translatedWeekDay.get(weekday.toLowerCase())}: \n\n`;
-    scheduleInfo.sort((a: any, b: any) => a.number - b.number);
-    scheduleInfo.forEach((item: any) => {
-      let subject: any;
+    let res = `Розклад на ${translatedWeekDay.get(weekday)}: \n\n`;
+    scheduleInfo.sort((a: Subject, b: Subject) => a.number - b.number);
+    scheduleInfo.forEach((item: Subject) => {
+      let subject: SubjectInfo;
       if (item.isDivided) {
         subject = this.isEvenWeekInMonth() ? item.evenSubject : item.oddSubject;
       } else {
